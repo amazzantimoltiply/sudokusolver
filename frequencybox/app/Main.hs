@@ -13,6 +13,15 @@ frame (MkBox c w h)=
         tline =  "   " ++ replicate w  '_' 
         bline =  "   " ++ replicate w  '_'
         vline l = " | " ++ l ++ " | " 
+vboxcompose::Box -> Box -> Box
+vboxcompose (MkBox c1 w1 h1) (MkBox c2 w2 h2)=
+    MkBox (c1' ++ c2') w h
+        where
+            w = max w1 w2
+            h = h1 + h2
+            pad n l = l ++ replicate n ' '
+            c1' = map (pad (w-w1)) c1
+            c2' = map (pad (w-w2)) c2
 main :: IO ()
 main = do
-    print (frame examplebox)
+    print (frame (vboxcompose examplebox examplebox))
