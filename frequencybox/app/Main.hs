@@ -9,9 +9,9 @@ instance Show Box where
     show = unlines . content
 frame::Box->Box
 frame (MkBox c w h)=
-    MkBox ([tline] ++ map vline c ++ [bline]) (w+2) (h+2) where
-        tline = " [" ++ replicate w '_' ++ "] " 
-        bline = " [" ++ replicate w '_' ++ "] "
+    MkBox ([tline] ++ map vline c ++ [bline]) (w + length c) (h+2) where
+        tline =  "   " ++ replicate w  '_' 
+        bline =  "   " ++ replicate w  '_'
         vline l = " | " ++ l ++ " | " 
 main :: IO ()
 main = do
