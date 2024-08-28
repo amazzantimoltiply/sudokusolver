@@ -2,6 +2,7 @@
 
 module Main (main) where
 
+import Data.Char
 data Employee = Coder | Manager | Veep | CEO deriving (Eq,Ord,Show)
 
 data WherePenguinsLive =
@@ -63,19 +64,54 @@ numToWord n = numToWord' n "" where
        | otherwise = numToWord' val numstring
             where
                 val = div n1 10
-                numstring = numToString!! index  ++ " " ++ result
+                numstring = numToString !! index  ++ " " ++ result
                 picknum = numToString !! n1
                 index = mod n1 10
 
 
-takeWords s = takeW' s []
+takeWords s = if null s then [] else
+    takeW' s []
     where
       takeW' s1 acc1
         | null s1 = acc1
-        | otherwise = takeW' lefts nextaccn 
+        | otherwise = takeW' nextword rest
           where
-              lefts = dropWhile (==' ') . dropWhile (/= ' ') $ s1
-              nextaccn = acc1 ++ takeWhile (/= ' ') s1
+              isSpace = flip elem " "
+              trim = dropWhile isSpace
+              nextword = trim . dropWhile (not . isSpace ) $ s1
+              rest = acc1 ++ takeWhile (/= ' ') s1
+
+myzip::[a]->[b]->[(a,b)] 
+myzip [] _ = []
+myzip _ [] = []
+myzip (a:as) (b:bs)= (a,b) : myzip as bs
+
+myZipWith::(a->b->c)->[a]->[b]->[c]
+myZipWith _ [] _ = []
+myZipWith _ _ [] = []
+myZipWith f (a:as) (b:bs) = f a b : myZipWith f as bs
+
+filterAllUp::String->String
+filterAllUp = filter isUpper
+
+capTheFirst::String->String
+capTheFirst (x:xs) = toUpper x : xs
+
+mysquare = [x^2|x<-[1..5]]
+myqube = [y^3|y<-[2..7]]
+
+mymix = [(x, y) | x <- mysquare, x < 50, y <- myqube, y < 50]
+
+myElem::Eq a=>a->[a]->Bool
+myElem _ [] = False
+myElem v (x:xs) = (v==x) || myElem v xs
+
+myremovew::String->[String]
+myremovew = filter (\x -> notElem x ["the","a","an"]) . words
+
+myReverse::[a]->[a]
+myReverse [] = []
+myReverse (x:xs) = myReverse xs ++ [x]
 
 main :: IO ()
 main = do
@@ -85,4 +121,13 @@ main = do
            --print (dividedBy 10 3)
            --print (numToWord 12756)
            --print (divByTen 125)
-           putStrLn (takeWords "ciao andrea come stai")
+           --putStrLn (takeWords "ciao andrea come stai")
+           --print mymix
+           --print (myremovew "the rocket is flying to the moon")
+           --print (myzip [1,2][3,4])
+           --print (myZipWith (+) [1,2] [3,4])
+           --print (myZipWith (,) [1,2] [3,4])
+           print (filterAllUp "HsdfEdmfLwqxLcdrtO")
+           print (capTheFirst "andrea")
+           print (myElem 5 [1,2,3])
+           print (myReverse "andrea")
