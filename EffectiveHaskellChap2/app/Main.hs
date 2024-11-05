@@ -58,6 +58,8 @@ findThatIsTrue fToTestIt = foldr findHelper []
             | fToTestIt val = [val]
             | otherwise = rest
 
+daughterAges = [(a,b,c,a+b+c)|a<-[0..36],b<-[0..36],c<-[0..36],(a*b*c)==36]
+
 main :: IO ()
 main =
     --print (factors 8)
@@ -72,4 +74,5 @@ main =
     --print (renderExpr'(Add (Mul (Lit 2) (Lit 3)) X ))
     --print (foldExpr (+) id (Add (Add (Lit 3) (Lit 3)) X) 3 )
     --print (tails [1,2,4,5,6,6,7,54,5,63])
-    print (findThatIsTrue (>5) [1..6])
+    --print (findThatIsTrue (>5) [1..6])
+    print daughterAges
