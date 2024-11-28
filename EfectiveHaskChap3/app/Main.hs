@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -Wno-overlapping-patterns #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE MonoLocalBinds #-}
 
 
 
@@ -63,6 +65,38 @@ fromPeano::Peano -> Int
 fromPeano Z = 0
 fromPeano (S p) = 1 + fromPeano p
 
+class Natural n where
+    equal::n->n->Bool
+    add::n->n->n
+    mul::n->n->n
+    addId::n
+    mulId::n 
+    
+
+instance Natural Int where
+    add = (+)
+    mul = (*)
+    addId = 0
+    mulId = 1
+
+instance Eq Peano where
+    (==) :: Peano -> Peano -> Bool
+    (==) Z Z = True
+    (==) (S a) (S b) = a==b
+    (==) _ _ = False
+    
+
+instance  Natural Peano where
+    add :: Peano -> Peano -> Peano
+    add a Z = a
+    add a (S b) = add (S a) b
+    mul _ Z = Z
+    mul Z _ = Z
+    mul (S a) b = add b (mul a b)
+    addId = Z
+    mulId = S Z
+     
+
 
 data PreferredCustomerContact = Email String | TextMessage String | Phone String
 
@@ -111,11 +145,11 @@ parseBinary oper args =
                     Right $ (oper arg1 arg2, rest')
 -}
 
-data Tree a = EmptyTree | Node a (Tree a) (Tree a) 
+data Tree a = EmptyTree | Node a (Tree a) (Tree a)
 
 insertNode::(Ord a) => a -> Tree a  -> Tree a
 insertNode x EmptyTree = Node x EmptyTree EmptyTree
-insertNode x (Node a left right) 
+insertNode x (Node a left right)
     | x == a = Node x left right
     | x < a = Node a (insertNode x left) right
     | x > a = Node a left (insertNode x right)
@@ -133,4 +167,5 @@ main = do
     --print (fromPeano (toPeano 3))
     --print (eval $ Div (Add (Lit 1) (Lit 3)) (Lit 2) )
     --print (runStringParser (takeChars 3) "Andrea" )
-    print (insertNode 2 (insertNode 3 (Node 0 EmptyTree EmptyTree)))
+    --print (insertNode 2 (insertNode 3 (Node 0 EmptyTree EmptyTree)))
+    print (mul (S (S Z)) (S (S Z)) ) 
