@@ -9,6 +9,7 @@ scaffold=[MkP "medicine" 8, MkP "rice" 1, MkP "sweets" 3]
 data Expr = Var String | Lit Int | Add Expr Expr --deriving Eq
 expr::Expr
 expr = Add (Var "x") (Add (Lit 3) (Var "y")) -- x + (3 + y)
+
 type Env = [(String,Int)]
 
 list::Env
@@ -26,10 +27,9 @@ lookupenv ((s,v):env) w
     | otherwise = lookupenv env w
 
 instance Eq Expr where
-    Var s1 == Var s2 = s1 == s2
-    Lit n == Lit m = n == m
-    Add e1 e2 == Add e3 e4 = e1 == e2 && e3 == e4
-    e1 == e2 = eval e1 == eval e2 
+    Var s1 == Var s2 = Eval (Var s1 ) == Eval (Var s2)
+    (Lit n == Lit m) = n == m
+    (Add e1 e2 == Add e3 e4) = (e1 == e3) && (e2 == e4) 
     _ == _ = False
 
 
