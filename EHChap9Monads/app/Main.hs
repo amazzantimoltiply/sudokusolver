@@ -1,6 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TupleSections #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use tuple-section" #-}
 
 
 module Main (main) where
@@ -8,7 +11,40 @@ module Main (main) where
 import Lib ( someFunc )
 import Data.String
 
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving stock (Eq,Ord,Show)  
+
+relable::Tree a -> Int -> (Tree Int,Int)
+relable (Leaf _) n = (Leaf n,n+1)
+relable (Node l r) n =
+    let (l', n')  = relable l n
+        (r', n'') = relable r n'
+    in (Node l' r', n'')
+    
+
+
 data Option a = None | Some a deriving Show
+
+type State = Int
+newtype ST a = S (State -> (a, State))
+
+app:: ST a -> State -> (a, State)
+app (S f) st = f st
+
+instance Functor ST where
+    fmap g (S f) = S (\s -> let (a, s') = f s in (g a, s'))
+instance Applicative ST where
+    pure a = S (\s -> (a, s))
+    S f <*> S g = S (\s -> let (h, s') = f s
+                               (x, s'') = g s'
+                           in (h x, s''))
+instance Show (ST a) where
+    show _ = "<ST function>"
+
+instance Monad ST where
+    return x = S (\s-> (x,s))
+    st >>= f = S (\s -> let (x, s') = app st s
+                            in app (f x) s')
+
 
 data SortedList a = Void | Cons a (SortedList a) deriving stock (Eq,Ord,Show)
 
@@ -21,9 +57,25 @@ instance Functor SortedList where
     fmap _ Void = Void
     fmap f (Cons a as) =  Cons (f a) (fmap f as)
 
+instance Applicative SortedList where
+    pure a = Cons a Void
+    Void <*> _ = Void
+    Cons f fs <*> vals = concatSortedLists (f <$> vals) (fs <*> vals)
+instance Monad SortedList where
+    return a = Cons a Void
+    Cons a as >>= f = concatSortedLists (f a) (as >>= f)
+
 instance Functor Option where
     fmap _ None = None
     fmap f (Some a) = Some (f a)
+instance Applicative Option where
+    pure a = Some a
+    None <*> _ = None
+    (Some f) <*> a = fmap f a
+
+concatSortedLists::SortedList a -> SortedList a -> SortedList a
+concatSortedLists Void as = as
+concatSortedLists (Cons a as) bs = Cons a (concatSortedLists as bs)
 
 data List a = Empty | List a (List a)
 
@@ -62,6 +114,7 @@ instance Applicative List where
     Empty <*> _ = Empty
     List f fs <*> vals = concatList (f <$> vals) (fs <*> vals)
 
+
 instance Monad List where
     return a = List a Empty
     Empty >>= f = Empty
@@ -70,7 +123,7 @@ instance Monad List where
 
 main :: IO ()
 main = do
-    --print ((\a->(a,succ a)) <$> Some 7)
+    --print (pure (+) <*> Some 3 <*> None)
     --print (fromList (toList [1,2,3]))
     --print (succ <$> List 1 (List 2 (List 3 Empty)) )
     --print (concatList (List 1 (List 2 (List 3 Empty))) (List 4 (List 5 Empty)))
@@ -78,7 +131,11 @@ main = do
     --print (toList ['a','b','c'])
     --print ("Hello Haskell"::List Char)
     --print (wordsL "Hello Haskell")
-    print (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void))))
-    >> print (fmap odd (insertSorted 0 (Cons 1 (Cons 2 Void)))) 
+    --print (concatSortedLists (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))) (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))))
+    --print ((-) . (*2) <$> insertSorted 0 (Cons 2 Void) <*> ((+1) <$> Cons 3 Void))
+    --print ((((+)) <$> Void) <*> Cons 1 Void)
+    --print (((+) <$> S (\s -> (1 :: Int, s))) <*> S (\s -> (2 :: Int, s)))
+    print (relable (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) 1)
+
 
 
