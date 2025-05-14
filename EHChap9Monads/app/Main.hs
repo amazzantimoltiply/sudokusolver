@@ -11,14 +11,15 @@ module Main (main) where
 import Lib ( someFunc )
 import Data.String
 
-data Tree a = Leaf a | Node (Tree a) (Tree a) deriving stock (Eq,Ord,Show)  
+data Tree a = Leaf a | Node (Tree a) (Tree a) deriving stock (Eq,Ord,Show)
+
 
 relable::Tree a -> Int -> (Tree Int,Int)
 relable (Leaf _) n = (Leaf n,n+1)
 relable (Node l r) n =
     let (l', n')  = relable l n
         (r', n'') = relable r n'
-    in (Node l' r', n'')
+    in (Node l' r', n'')    
     
 
 
