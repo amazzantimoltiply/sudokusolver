@@ -1,142 +1,95 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE TupleSections #-}
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use tuple-section" #-}
-
+{-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE OverloadedStrings #-}  
 
 module Main (main) where
 
-import Lib ( someFunc )
-import Data.String
+-- Import from our library
+import Lib (Tree(..)
+         , relable
+         , Option(..)
+         , State
+         , ST(..)
+         , SortedList(..)
+         , insertSorted
+         , concatSortedLists
+         , List(..)
+         , concatList
+         , toList
+         , fromList
+         , StringL
+         , replicateL
+         , wordsL
+         , app
+         , IsString(..)
+         )
 
-data Tree a = Leaf a | Node (Tree a) (Tree a) deriving stock (Eq,Ord,Show)
+-- Import from Prelude
+import Prelude (print
+              , putStrLn
+              , Int
+              , Integer
+              , (+)
+              , (-)
+              , (*)
+              , (.)
+              , ($)
+              , Show(..)
+              , String
+              , Char
+              , IO
+              , fmap
+              , pure
+              , (<*>)
+              , (<$>)
+              , (>>=)
+              , (>>)
+              , return
+              , succ
+              , id
+              , Num(..)
+              , Enum(..)
+              , Ord(..)
+              )
 
+-- Test Option type
+testOption :: IO ()
+testOption = print (pure (+) <*> Some 3 <*> None)
 
-relable::Tree a -> Int -> (Tree Int,Int)
-relable (Leaf _) n = (Leaf n,n+1)
-relable (Node l r) n =
-    let (l', n')  = relable l n
-        (r', n'') = relable r n'
-    in (Node l' r', n'')    
-    
+-- Test List operations
+testList :: IO ()
+testList = do
+    print (fromList (toList [1,2,3]))
+    print (concatList (List 1 (List 2 (List 3 Empty))) (List 4 (List 5 Empty)))
+    print (toList ['a','b','c'])
+    print ("Hello Haskell"::List Char)
+    print (wordsL "Hello Haskell")
 
+-- Test SortedList operations
+testSortedList :: IO ()
+testSortedList = do
+    print (concatSortedLists (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))) 
+                            (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))))
+    print ((-) . (*2) <$> insertSorted 0 (Cons 2 Void) <*> ((+1) <$> Cons 3 Void))
+    print ((((+)) <$> Void) <*> Cons 1 Void)
 
-data Option a = None | Some a deriving Show
+-- Test State operations
+testState :: IO ()
+testState = print (((+) <$> S (\s -> (1 :: Int, s))) <*> S (\s -> (2 :: Int, s)))
 
-type State = Int
-newtype ST a = S (State -> (a, State))
+-- Test Tree relabeling
+testRelabel :: IO ()
+testRelabel = print (relable (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) 1)
 
-app:: ST a -> State -> (a, State)
-app (S f) st = f st
-
-instance Functor ST where
-    fmap g (S f) = S (\s -> let (a, s') = f s in (g a, s'))
-instance Applicative ST where
-    pure a = S (\s -> (a, s))
-    S f <*> S g = S (\s -> let (h, s') = f s
-                               (x, s'') = g s'
-                           in (h x, s''))
-instance Show (ST a) where
-    show _ = "<ST function>"
-
-instance Monad ST where
-    return x = S (\s-> (x,s))
-    st >>= f = S (\s -> let (x, s') = app st s
-                            in app (f x) s')
-
-
-data SortedList a = Void | Cons a (SortedList a) deriving stock (Eq,Ord,Show)
-
-insertSorted::Ord a=>a->SortedList a->SortedList a
-insertSorted a Void = Cons a Void
-insertSorted a (Cons b bs)
-    | a >= b = Cons b ( insertSorted a bs)
-    |otherwise = Cons a (Cons b bs)
-instance Functor SortedList where
-    fmap _ Void = Void
-    fmap f (Cons a as) =  Cons (f a) (fmap f as)
-
-instance Applicative SortedList where
-    pure a = Cons a Void
-    Void <*> _ = Void
-    Cons f fs <*> vals = concatSortedLists (f <$> vals) (fs <*> vals)
-instance Monad SortedList where
-    return a = Cons a Void
-    Cons a as >>= f = concatSortedLists (f a) (as >>= f)
-
-instance Functor Option where
-    fmap _ None = None
-    fmap f (Some a) = Some (f a)
-instance Applicative Option where
-    pure a = Some a
-    None <*> _ = None
-    (Some f) <*> a = fmap f a
-
-concatSortedLists::SortedList a -> SortedList a -> SortedList a
-concatSortedLists Void as = as
-concatSortedLists (Cons a as) bs = Cons a (concatSortedLists as bs)
-
-data List a = Empty | List a (List a)
-
-concatList::List a ->List a-> List a
-concatList Empty as = as
-concatList (List a as) bs= List a (concatList as bs)
-
-toList::[a]->List a
-toList = foldr List Empty
-
-fromList::List a ->[a]
-fromList Empty = []
-fromList (List a as) = a : fromList as
-
-instance Show a => Show (List a) where
-    show = show . fromList
-
-instance IsString (List Char) where
-    fromString = toList
-
-type StringL = List Char
-
-replicateL::Int-> a -> List a
-replicateL 0 _ = Empty
-replicateL n a = List a (replicateL (n-1) a)
-
-wordsL::StringL->List StringL
-wordsL = toList . map toList . words . fromList
-
-instance Functor List where
-    fmap _ Empty = Empty
-    fmap f (List a as) = List ( f a ) (fmap f as)
-
-instance Applicative List where
-    pure a = List a Empty
-    Empty <*> _ = Empty
-    List f fs <*> vals = concatList (f <$> vals) (fs <*> vals)
-
-
-instance Monad List where
-    return a = List a Empty
-    Empty >>= f = Empty
-    List a as >>= f = concatList (f a) (as >>= f)
-
-
+-- Main program that runs all tests
 main :: IO ()
 main = do
-    --print (pure (+) <*> Some 3 <*> None)
-    --print (fromList (toList [1,2,3]))
-    --print (succ <$> List 1 (List 2 (List 3 Empty)) )
-    --print (concatList (List 1 (List 2 (List 3 Empty))) (List 4 (List 5 Empty)))
-    --print([(+1),(*2),id] <*> [1,2,3])
-    --print (toList ['a','b','c'])
-    --print ("Hello Haskell"::List Char)
-    --print (wordsL "Hello Haskell")
-    --print (concatSortedLists (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))) (fmap succ (insertSorted 0 (Cons 1 (Cons 2 Void)))))
-    --print ((-) . (*2) <$> insertSorted 0 (Cons 2 Void) <*> ((+1) <$> Cons 3 Void))
-    --print ((((+)) <$> Void) <*> Cons 1 Void)
-    --print (((+) <$> S (\s -> (1 :: Int, s))) <*> S (\s -> (2 :: Int, s)))
-    print (relable (Node (Leaf 'a') (Node (Leaf 'b') (Leaf 'c'))) 1)
-
-
-
+    _ <- putStrLn "Testing Option type..."
+    _ <- testOption
+    _ <- putStrLn "\nTesting List operations..."
+    _ <- testList
+    _ <- putStrLn "\nTesting SortedList operations..."
+    _ <- testSortedList
+    _ <- putStrLn "\nTesting State operations..."
+    _ <- testState
+    _ <- putStrLn "\nTesting Tree relabeling..."
+    testRelabel

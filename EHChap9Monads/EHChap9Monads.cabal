@@ -37,7 +37,7 @@ library
       base >=4.7 && <5
   default-language: Haskell2010
 
-executable EHChap9Monads-exe
+executable EHChap9Monads
   main-is: Main.hs
   other-modules:
       Paths_EHChap9Monads
@@ -48,7 +48,7 @@ executable EHChap9Monads-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       EHChap9Monads
-    , base >=4.7 && <5
+    , base
   default-language: Haskell2010
 
 test-suite EHChap9Monads-test
@@ -63,5 +63,6 @@ test-suite EHChap9Monads-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       EHChap9Monads
-    , base >=4.7 && <5
+    , QuickCheck
+    , base
   default-language: Haskell2010

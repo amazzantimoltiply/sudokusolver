@@ -4,9 +4,9 @@ module Lib
     ) where
 
 indexOfCharAt::[a] -> Int -> a
-indexOfCharAt (a:as) 0 = a
-indexOfCharAt (a:as) n = indexOfCharAt as (n-1)
-indexOfChatAt [] _ = error "Index out of bounds"
+indexOfCharAt [] _ = error "Index out of bounds"
+indexOfCharAt (a:_) 0 = a
+indexOfCharAt (_:as) n = indexOfCharAt as (n-1)
 
 
 countNOfCharAt::Eq a => [a] -> a -> Int
