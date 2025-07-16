@@ -1,0 +1,7 @@
+resolver: lts-22.24
+
+# Add Hspec for testing
+extra-deps:
+- hspec-2.11.7
+- hspec-core-2.11.7@sha256:f54070f14418ebdde3af73f22057a24f6b687c01ec207a60a996ad9ac83ca8ae,6846
+- hspec-discover-2.11.7@sha256:6307eb16d308258a99a242025df50217d835ba0a3f205b1202a100a175877b38,2169
