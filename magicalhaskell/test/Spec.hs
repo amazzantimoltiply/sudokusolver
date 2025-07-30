@@ -1,10 +1,29 @@
 module Main (main) where
 
 import Test.Hspec
+import Test.QuickCheck
 import Data.Bifunctor (bimap)
+import qualified Data.Map as Map
+
 import Lib (MyEither(..), Countable(..), safeDivide,
             Card(..), CardValue(..), CardSuite(..), fullDeck, smallDeck,
-            Person(..), tell,loadFromFile,quicksort,trim',groupPairs,convertDigitToSum)
+            Person(..), tell,
+            loadFromFile,
+            quicksort,
+            trim',
+            groupPairs,
+            convertDigitToSum,
+            findTo,
+            findKey, Vector3D(..),
+            List(..), 
+            toList, 
+            fromList,
+            Tree(..),
+            singletonTree,
+            insertTree,
+            treeElem,
+            height,
+            balanceFactor)
 
 main :: IO ()
 main = hspec $ do
@@ -169,3 +188,127 @@ main = hspec $ do
       let digits = -123
           sumRepresentation = convertDigitToSum digits
       sumRepresentation `shouldBe` 6
+
+  describe "find the sum n of combined digits" $ do
+    it "finds the sum of combined digits" $ do
+      let n = 40
+      let sum = findTo n
+      sum `shouldBe` Just 49999
+  
+  describe "find a key in a phone book" $ do
+    it "finds a key in the phone book" $ do
+      let phoneBook = [("John", "123-4567")]
+      let key = "John"
+          phoneNumber = lookup key phoneBook
+      phoneNumber `shouldBe` Just "123-4567"
+
+    it "returns Nothing for a non-existent key" $ do
+      let phoneBook = [("John", "123-4567")]
+      let key = "NonExistent"
+          phoneNumber = lookup key phoneBook
+      phoneNumber `shouldBe` Nothing
+
+    it "returns Just for an existing key" $ do
+      let phoneBook = [("John", "123-4567"),
+                       ("Jane", "987-6543")]
+      let key = "Jane"
+          phoneNumber = lookup key phoneBook
+      phoneNumber `shouldBe` Just "987-6543"
+  describe "findKey function" $ do
+    it "finds a key in a list of pairs" $ do
+      let phoneBook = [("John", "123-4567"), ("Jane", "987-6543")]
+      findKey "John" phoneBook `shouldBe` Just "123-4567"
+
+    it "returns Nothing for a non-existent key" $ do
+      let phoneBook = [("John", "123-4567")]
+      findKey "NonExistent" phoneBook `shouldBe` Nothing
+
+    it "returns Just for an existing key" $ do
+      let phoneBook = [("Alice", "555-1234"), ("Bob", "555-5678")]
+      findKey "Alice" phoneBook `shouldBe` Just "555-1234"
+  describe "using lookup" $ do
+    it "finds a key in a list of pairs" $ do
+      let phoneBook = [("John", "123-4567"), ("Jane", "987-6543")]
+      lookup "John" phoneBook `shouldBe` Just "123-4567"
+
+    it "returns Nothing for a non-existent key" $ do
+      let phoneBook = [("John", "123-4567")]
+      lookup "NonExistent" phoneBook `shouldBe` Nothing
+
+    it "returns Just for an existing key" $ do
+      let phoneBook = Map.fromList [("Alice", "555-1234"), ("Bob", "555-5678")]
+      let updatedBook = Map.insert "Andrea" "555-4455" phoneBook   
+      Map.lookup "Andrea" updatedBook `shouldBe` Just "555-4455"
+  
+  describe "test algeabric operators on vectors" $ do
+    it "can add two vectors" $ do
+      let v1 = Vector3D 1 2 3
+          v2 = Vector3D 4 5 6
+      let result = v1 + v2
+      result `shouldBe` Vector3D 5 7 9
+
+  describe "my list operator" $ do
+    it "can create custom lists" $ do
+      let myList = fromList [3, 4, 5] :: List Int
+      toList myList `shouldBe` [3, 4, 5]
+
+    it "can convert from regular list" $ do
+      let regularList = [3, 4, 5]
+          customList = fromList regularList :: List Int
+      toList customList `shouldBe` regularList
+
+  describe "AVL Tree operations" $ do
+    it "maintains BST property" $ do
+      let values = [5, 3, 7, 1, 9, 4, 6] :: [Int]
+          tree = foldr insertTree EmptyTree values
+      all (\x -> treeElem x tree) values `shouldBe` True  -- Contains all inserted elements
+      treeElem 8 tree `shouldBe` False                    -- Doesn't contain non-inserted elements
+
+    it "maintains AVL balance invariant" $ do
+      let values = [5, 3, 7, 1, 9, 4, 6] :: [Int]
+          tree = foldr insertTree EmptyTree values
+      abs (balanceFactor tree) `shouldSatisfy` (<= 1)
+      all (\x -> treeElem x tree) values `shouldBe` True
+
+    it "handles increasing sequence correctly" $ do
+      let values = [1..7] :: [Int]
+          tree = foldr insertTree EmptyTree values
+      abs (balanceFactor tree) `shouldSatisfy` (<= 1)
+      all (\x -> treeElem x tree) values `shouldBe` True
+
+    it "handles decreasing sequence correctly" $ do
+      let values = [7,6..1] :: [Int]
+          tree = foldr insertTree EmptyTree values
+      abs (balanceFactor tree) `shouldSatisfy` (<= 1)
+      all (\x -> treeElem x tree) values `shouldBe` True
+
+    it "handles duplicates correctly" $ do
+      let values = [5,5,5,5] :: [Int]
+          tree = foldr insertTree EmptyTree values
+      height tree `shouldBe` 1  -- Only one node should exist
+      treeElem 5 tree `shouldBe` True
+
+    it "maintains correct height after operations" $ do
+      let values = [5,3,7,1,9,4,6] :: [Int]
+          tree = foldr insertTree EmptyTree values
+          n = length values
+      putStrLn $ "Tree: " ++ show tree
+      putStrLn $ "Height: " ++ show (height tree)
+      putStrLn $ "Expected max height: " ++ show (ceiling (logBase 2 (fromIntegral n + 1)))
+      putStrLn $ "Insertions: " ++ show (reverse values)
+      height tree `shouldSatisfy` (<= ceiling (logBase 2 (fromIntegral n + 1)))
+
+  describe "Functor instance for AVL Tree" $ do
+    it "maintains AVL properties after fmap" $ do
+      let values = [5,3,7,1,9,4,6] :: [Int]
+          tree = foldr insertTree EmptyTree values
+          mappedTree = fmap (*2) tree
+      abs (balanceFactor mappedTree) `shouldSatisfy` (<= 1)
+      height mappedTree `shouldBe` height tree
+
+    it "preserves tree structure after fmap" $ do
+      let values = [5,3,7] :: [Int]
+          tree = foldr insertTree EmptyTree values
+          mappedTree = fmap (*2) tree
+      height mappedTree `shouldBe` height tree
+      abs (balanceFactor mappedTree) `shouldSatisfy` (<= 1)
