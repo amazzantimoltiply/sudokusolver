@@ -78,32 +78,30 @@ updateHeight (Node x left right _) =
 
 rotateLeft :: Tree a -> Tree a
 rotateLeft EmptyTree = EmptyTree
-rotateLeft (Node x left EmptyTree _) = updateHeight (Node x left EmptyTree 0)
+rotateLeft tree@(Node _ _ EmptyTree _) = updateHeight tree
 rotateLeft (Node x left (Node y rl rr _) _) = 
-  let newLeft = updateHeight (Node x left rl 0)
-  in updateHeight (Node y newLeft rr 0)
+  updateHeight $ Node y (updateHeight $ Node x left rl 1) (updateHeight rr) 1
 
 rotateRight :: Tree a -> Tree a
 rotateRight EmptyTree = EmptyTree
-rotateRight (Node x EmptyTree right _) = updateHeight (Node x EmptyTree right 0)
+rotateRight tree@(Node _ EmptyTree _ _) = updateHeight tree
 rotateRight (Node y (Node x ll lr _) right _) = 
-  let newRight = updateHeight (Node y lr right 0)
-  in updateHeight (Node x ll newRight 0)
+  updateHeight $ Node x (updateHeight ll) (updateHeight $ Node y lr right 1) 1
+
+rebalanceNode :: Tree a -> Tree a
+rebalanceNode EmptyTree = EmptyTree
+rebalanceNode tree@(Node x left right h) = 
+  let newNode = Node x left right (1 + max (height left) (height right))
+      bf = balanceFactor newNode
+  in case () of
+       _ | bf > 1 && balanceFactor right >= 0  -> rotateLeft newNode
+         | bf > 1                               -> rotateLeft $ Node x left (rotateRight right) h
+         | bf < -1 && balanceFactor left <= 0  -> rotateRight newNode
+         | bf < -1                             -> rotateRight $ Node x (rotateLeft left) right h
+         | otherwise                           -> newNode
 
 balance :: Tree a -> Tree a
-balance EmptyTree = EmptyTree
-balance tree@(Node x left right _)
-  | bf > 1 && rightBf >= 0 = rotateLeft tree                                      -- Right-Right case
-  | bf > 1 = let newRight = rotateRight right                                     -- Right-Left case
-             in rotateLeft (updateHeight (Node x left newRight 0))
-  | bf < -1 && leftBf <= 0 = rotateRight tree                                     -- Left-Left case
-  | bf < -1 = let newLeft = rotateLeft left                                       -- Left-Right case
-              in rotateRight (updateHeight (Node x newLeft right 0))
-  | otherwise = updateHeight tree
-  where
-    bf = balanceFactor tree
-    leftBf = balanceFactor left
-    rightBf = balanceFactor right
+balance = rebalanceNode . updateHeight
 
 singletonTree :: a -> Tree a
 singletonTree x = Node x EmptyTree EmptyTree 1
@@ -111,10 +109,8 @@ singletonTree x = Node x EmptyTree EmptyTree 1
 insertTree :: Ord a => a -> Tree a -> Tree a
 insertTree x EmptyTree = singletonTree x
 insertTree x node@(Node y left right _)
-  | x < y     = let newLeft = balance $ insertTree x left
-                in balance $ updateHeight $ Node y newLeft right 0
-  | x > y     = let newRight = balance $ insertTree x right
-                in balance $ updateHeight $ Node y left newRight 0
+  | x < y     = rebalanceNode $ Node y (insertTree x left) right 1
+  | x > y     = rebalanceNode $ Node y left (insertTree x right) 1
   | otherwise = node  -- Handle the case when x == y
 
 
