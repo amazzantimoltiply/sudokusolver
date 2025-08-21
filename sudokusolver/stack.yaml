@@ -1,0 +1,10 @@
+resolver: lts-20.26  # A stable resolver that works with GHC 9.2.7
+
+packages:
+- .
+
+extra-deps: []
+
+flags: {}
+
+extra-package-dbs: []

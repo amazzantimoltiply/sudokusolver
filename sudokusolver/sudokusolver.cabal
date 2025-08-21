@@ -1,0 +1,57 @@
+cabal-version:      2.4
+name:               sudokusolver
+version:            0.1.0.0
+
+-- A short (one-line) description of the package.
+-- synopsis:
+
+-- A longer description of the package.
+-- description:
+
+-- A URL where users can report bugs.
+-- bug-reports:
+
+-- The license under which the package is released.
+-- license:
+author:             Gammaglobulino
+maintainer:         mazzantia@hotmail.com
+
+-- A copyright notice.
+-- copyright:
+-- category:
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+library
+    exposed-modules:  Lib
+    hs-source-dirs:   src
+    build-depends:    base ^>=4.16.4.0
+    default-language: Haskell2010
+
+executable sudokusolver
+    main-is:          Main.hs
+    build-depends:    base ^>=4.16.4.0,
+                     time,
+                     sudokusolver
+    hs-source-dirs:   app
+    default-language: Haskell2010
+
+test-suite sudokusolver-test
+    type:             exitcode-stdio-1.0
+    main-is:          Spec.hs
+    hs-source-dirs:   test
+    build-depends:    base ^>=4.16.4.0,
+                     HUnit,
+                     sudokusolver
+    default-language: Haskell2010
+
+benchmark sudokusolver-bench
+    type:             exitcode-stdio-1.0
+    main-is:          Benchmark.hs
+    hs-source-dirs:   bench
+    build-depends:    base ^>=4.16.4.0,
+                     criterion,
+                     deepseq,
+                     sudokusolver
+    default-language: Haskell2010

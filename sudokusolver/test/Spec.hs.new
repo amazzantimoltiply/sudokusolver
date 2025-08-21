@@ -1,0 +1,68 @@
+import Test.HUnit
+import Lib
+
+-- Test cases for cartesian product and cartesian block with explicit type annotations
+testEmptyLists :: Test
+testEmptyLists = TestList [
+    TestCase $ assertEqual 
+        "cp should handle empty list"
+        (([[]] :: [[Int]]))
+        ((cp [] :: [[Int]])),
+    TestCase $ assertEqual
+        "cb should handle empty list"
+        (([[]] :: [[Int]]))
+        ((cb [] :: [[Int]]))
+    ]
+
+testSingleLists :: Test
+testSingleLists = TestList [
+    TestCase $ assertEqual
+        "cp should handle single list"
+        ([[1]] :: [[Int]])
+        ((cp [[1]] :: [[Int]])),
+    TestCase $ assertEqual
+        "cb should handle single block"
+        ([[1], [2]] :: [[Int]])
+        ((cb [[1,2]] :: [[Int]]))
+    ]
+
+testMultipleLists :: Test
+testMultipleLists = TestList [
+    TestCase $ assertEqual
+        "cp should compute cartesian product"
+        ([[1,3], [1,4], [2,3], [2,4]] :: [[Int]])
+        ((cp [[1,2], [3,4]] :: [[Int]])),
+    TestCase $ assertEqual
+        "cb should combine blocks"
+        ([[1,3], [1,4], [2,3], [2,4]] :: [[Int]])
+        ((cb [[1,2], [3,4]] :: [[Int]]))
+    ]
+
+testSplitBlock :: Test
+testSplitBlock = TestList [
+    TestCase $ assertEqual 
+        "splitBlock should handle empty list"
+        ([] :: [[Int]])
+        (splitBlock 3 ([] :: [Int])),
+    TestCase $ assertEqual
+        "splitBlock should split evenly"
+        ([[1,2,3], [4,5,6]] :: [[Int]])
+        (splitBlock 3 ([1..6] :: [Int])),
+    TestCase $ assertEqual
+        "splitBlock should handle uneven splits"
+        ([[1,2,3], [4,5]] :: [[Int]])
+        (splitBlock 3 ([1..5] :: [Int]))
+    ]
+
+tests :: Test
+tests = TestList [
+    testEmptyLists,
+    testSingleLists,
+    testMultipleLists,
+    testSplitBlock
+    ]
+
+main :: IO ()
+main = do
+    counts <- runTestTT tests
+    putStrLn $ "Tests completed: " ++ show counts
