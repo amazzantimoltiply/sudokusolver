@@ -33,7 +33,7 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-    - Lib
+    - Grid
   dependencies:
     - base
 

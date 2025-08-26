@@ -120,8 +120,35 @@ test12 = TestCase (assertEqual "completitions with scattered blanks"
      , "506"  -- 0 in middle position
      ]))
 
+test13 :: Test
+test13 = TestCase (assertEqual "group numbers by 3" 
+    [["123", "456", "789"], ["abc", "def", "ghi"]]
+    (group ["123", "456", "789", "abc", "def", "ghi"]))
+
+test14 :: Test
+test14 = TestCase (assertEqual "group empty list"
+    ([] :: [[String]])
+    (group []))
+
+test15 :: Test
+test15 = TestCase (assertEqual "group with negative size"
+    ([] :: [[String]])
+    (group ["123", "456", "789"]))
+
+
+test16 :: Test
+test16 = TestCase (assertEqual "ungroup nested list" 
+    ["123", "456", "789", "abc", "def", "ghi"]
+    (ungroup [["123", "456", "789"], ["abc", "def", "ghi"]]))
+
+test17 :: Test
+test17 = TestCase (assertEqual "ungroup empty list"
+    ([] :: [String])
+    (ungroup []))
+
 tests :: Test
-tests = TestList [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12]
+tests = TestList [test1, test2, test3, test4, test5, test6, test7, test8, test9, test10, test11, test12, 
+                 test13, test14, test15, test16, test17]
 
 main :: IO ()
 main = do
