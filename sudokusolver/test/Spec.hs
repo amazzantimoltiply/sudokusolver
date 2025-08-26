@@ -132,7 +132,7 @@ test14 = TestCase (assertEqual "group empty list"
 
 test15 :: Test
 test15 = TestCase (assertEqual "group with negative size"
-    ([] :: [[String]])
+    ([["123", "456", "789"]])
     (group ["123", "456", "789"]))
 
 

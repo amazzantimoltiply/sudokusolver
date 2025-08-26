@@ -42,7 +42,7 @@ rows = id
 -- | Get columns from a grid (transpose)
 cols :: Matrix a-> [Row a]
 cols [] = []
-cols [xs] = [xs]
+cols [xs] = [[x]|x<-xs]
 cols (xs:xss) = zipWith (:) xs (cols xss)
 
 -- | Cartesian product of a list of lists
