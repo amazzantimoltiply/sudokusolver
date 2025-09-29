@@ -1,0 +1,26 @@
+{
+    "haskell.checkProject": true,
+    "haskell.formattingProvider": "ormolu",
+    "haskell.manageHLS": "GHCup",
+    "haskell.toolchain": {
+        "ghc": "9.6.7",
+        "cabal": "3.12.1.0",
+        "stack": "3.7.1"
+    },
+    "[haskell]": {
+        "editor.defaultFormatter": "haskell.haskell",
+        "editor.formatOnSave": true,
+        "editor.suggestSelection": "first",
+        "editor.tabSize": 2
+    },
+    "files.exclude": {
+        "**/*.hi": true,
+        "**/*.o": true,
+        "**/.stack-work": true,
+        "**/dist-newstyle": true
+    },
+    "files.watcherExclude": {
+        "**/.stack-work/**": true,
+        "**/dist-newstyle/**": true
+    }
+}
