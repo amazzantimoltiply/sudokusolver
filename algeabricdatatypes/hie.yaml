@@ -1,0 +1,10 @@
+cradle:
+  stack:
+    stackYaml: "./stack.yaml"
+    components:
+      - path: "./src"
+        component: "algeabricdatatypes:lib"
+      - path: "./app"
+        component: "algeabricdatatypes:exe:algeabricdatatypes-exe"
+      - path: "./test"
+        component: "algeabricdatatypes:test:algeabricdatatypes-test"
